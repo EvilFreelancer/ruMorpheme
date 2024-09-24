@@ -1,0 +1,6 @@
+# General
+numpy~=2.1.1
+torch~=2.4.1
+
+# Reporting
+wandb~=0.18.1

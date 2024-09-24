@@ -1,0 +1,26 @@
+{
+  "model_params": {
+    "conv_layers": 3,
+    "window_size": [5],
+    "filters_number": 192,
+    "dense_output_units": 64,
+    "nepochs": 75,
+    "validation_split": 0.2,
+    "early_stopping": 10,
+    "to_memorize_morphemes": false,
+    "dropout": 0.2,
+    "to_memorize_ngram_counts": false,
+    "context_dropout": 0.2,
+    "models_number": 1
+  },
+  "wandb": {
+    "enabled": true,
+    "project": "ruMorpheme"
+  },
+  "model_file": "model/pytorch-model.bin",
+  "vocab_file": "model/vocab.json",
+  "train_file": "data/test_Tikhonov_reformat.txt",
+  "test_file": "data/test_Tikhonov_reformat.txt",
+  "outfile": "model/evaluation_report.txt",
+  "save_file": "model/morphemes.json"
+}
