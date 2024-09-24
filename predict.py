@@ -1,30 +1,47 @@
 import sys
+import os
 import json
 import torch
 from torch.utils.data import Dataset, DataLoader
+from huggingface_hub import hf_hub_download
+import argparse
 
 from train import Partitioner, prepare_data, labels_to_morphemes
 
-# Load the configuration file
-if len(sys.argv) < 3:
-    print("Usage: python predict.py <config_file.json> <input_text_file>")
-    sys.exit(1)
-
-config_file = sys.argv[1]
-input_text_file = sys.argv[2]
-
-with open(config_file, "r", encoding="utf8") as fin:
-    params = json.load(fin)
+parser = argparse.ArgumentParser(description="Morpheme Segmentation Script")
+parser.add_argument("input_text_file", help="Path to the input text file")
+parser.add_argument("--model-path", default='./model', help="Local directory containing model files or Hugging Face repo ID")
+parser.add_argument("--batch-size", default=10)
+parser.add_argument("--use-morpheme-types", action='store_false')
+args = parser.parse_args()
 
 # Settings
-vocab_path = params.get("vocab_file", "model/vocab.json")
-model_params = params.get("model_params")
-model_file = params.get("model_file", "model/pytorch-model.bin")
-batch_size = params.get("batch_size", 32)
-use_morpheme_types = params.get("use_morpheme_types", True)
+model_path = args.model_path
+input_text_file = args.input_text_file
+batch_size = int(args.batch_size)
+use_morpheme_types = bool(args.use_morpheme_types)
+
+if os.path.isdir(model_path):
+    # Load files from local directory
+    config_file = os.path.join(model_path, "config.json")
+    vocab_file = os.path.join(model_path, "vocab.json")
+    model_file = os.path.join(model_path, "pytorch-model.bin")
+    if not all(os.path.isfile(f) for f in [config_file, vocab_file, model_file]):
+        print("Model files not found in the specified directory.")
+        sys.exit(1)
+else:
+    # Assume model_path is a Hugging Face repo ID
+    repo_id = model_path
+    config_file = hf_hub_download(repo_id=repo_id, filename="config.json")
+    vocab_file = hf_hub_download(repo_id=repo_id, filename="vocab.json")
+    model_file = hf_hub_download(repo_id=repo_id, filename="pytorch-model.bin")
+
+# Read parameters of model
+with open(config_file, "r", encoding="utf8") as fin:
+    model_params = json.load(fin)
 
 # Load vocabularies
-with open(vocab_path, "rb") as f:
+with open(vocab_file, "rb") as f:
     vocab_data = json.load(f)
 symbols = vocab_data["symbols"]
 symbol_codes = vocab_data["symbol_codes"]
@@ -38,7 +55,7 @@ model = Partitioner(
     target_symbols_number=len(target_symbols),
     params=model_params
 )
-model.load_state_dict(torch.load(model_file, map_location=device))
+model.load_state_dict(torch.load(model_file, map_location=device, weights_only=True))
 model.to(device)
 model.eval()
 # print(f"Model loaded from {model_path}")

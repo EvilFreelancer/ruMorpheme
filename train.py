@@ -374,6 +374,12 @@ if __name__ == "__main__":
     torch.save(model.state_dict(), model_path)
     print(f"Модель сохранена в {model_path}")
 
+    # Save model config
+    config_file = params.get("config_file", "model/config.json")
+    with open(config_file, "w") as f:
+        json.dump(params["model_params"], f, indent=2, ensure_ascii=False)
+    print(f"Конфигурация модели сохранена в {config_file}")
+
     # Save vocabulary
     vocab_path = params.get("vocab_file", "model/vocab.json")
     with open(vocab_path, "w") as f:

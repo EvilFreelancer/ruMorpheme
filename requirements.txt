@@ -4,3 +4,6 @@ torch~=2.4.1
 
 # Reporting
 wandb~=0.18.1
+
+# Prediction
+huggingface-hub==0.25.1

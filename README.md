@@ -12,6 +12,8 @@
 - постфиксы (POSTFIX)
 - окончания (END)
 
+Веса модели [evilfreelancer/ruMorpheme-v0.1](https://huggingface.co/evilfreelancer/ruMorpheme-v0.1) на HuggingFace.
+
 Вдохновлён кодовой базой проекта [AlexeySorokin/NeuralMorphemeSegmentation](https://github.com/AlexeySorokin/NeuralMorphemeSegmentation), который
 реализован в рамках
 публикации "[Deep Convolutional Networks for Supervised Morpheme Segmentation of Russian Language](https://github.com/AlexeySorokin/NeuralMorphemeSegmentation/blob/master/Articles/MorphemeSegmentation_final.pdf)"
@@ -76,11 +78,12 @@ python3 eval.py config/ruMorpheme.json
 
 Отчёт валидации будет в `models/evaluation_report.txt`.
 
-### Предикшен
+### Использование модели
 
 Запуск тестового предикшена из файла [input_text.txt](./input_text.txt):
 
 ```shell
-python3 predict.py config/ruMorpheme.json input_text.txt
+python predict.py input_text.txt --model-path=evilfreelancer/ruMorpheme-v0.1
 ```
 
+Если не указывать `--model-path` то модель и конфигурация будут прочитаны из директории `./model`.
