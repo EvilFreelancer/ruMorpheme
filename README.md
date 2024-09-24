@@ -1,4 +1,4 @@
-# ruMorpheme
+# ruMorpheme - Russian Morphemes Segmentation
 
 Проект языковой модели для проведения морфемного анализа и сегментации слов русского языка.
 
