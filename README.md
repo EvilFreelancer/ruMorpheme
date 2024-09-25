@@ -49,6 +49,7 @@
 git clone https://github.com/EvilFreelancer/ruMorpheme.git
 cd ruMorpheme
 python3 -m venv venv
+pip install -r requirements.txt
 ```
 
 Активируем окружение:
@@ -67,7 +68,8 @@ python3 train.py config/ruMorpheme.json
 
 По завершению тренировки будут созданы:
 
-- `model/pytorch-model.bin` - веса модели 
+- `model/pytorch-model.bin` - веса модели
+- `model/config.json` - конфигурация модели
 - `model/vocab.json` - словарь необходимый для работы предикшена
 
 ### Валидация модели
