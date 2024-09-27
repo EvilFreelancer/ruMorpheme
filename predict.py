@@ -8,6 +8,8 @@ import argparse
 
 from train import Partitioner, prepare_data, labels_to_morphemes
 
+import re
+
 parser = argparse.ArgumentParser(description="Morpheme Segmentation Script")
 parser.add_argument("input_text_file", help="Path to the input text file")
 parser.add_argument("--model-path", default='./model', help="Local directory containing model files or Hugging Face repo ID")
@@ -62,11 +64,31 @@ model.eval()
 
 # Read input text
 words = []
+# Регулярное выражение для проверки русской буквы
+russian_letter_pattern = re.compile(r'[а-яА-ЯёЁ]')
 with open(input_text_file, "r", encoding="utf8") as f:
     for line in f:
         if line.strip():
             words += line.split(' ')
     words = [ln.strip() for ln in words]
+    
+    # Обрабатываем каждый элемент в списке words
+    for i in range(len(words)):
+        word = words[i]
+        
+        # Удаляем начальные символы, не являющиеся русскими буквами
+        while word and not russian_letter_pattern.match(word[0]):
+            word = word[1:]
+        
+        # Удаляем конечные символы, не являющиеся русскими буквами
+        while word and not russian_letter_pattern.match(word[-1]):
+            word = word[:-1]
+        
+        # Обновляем элемент списка, если слово не пустое, иначе удаляем его
+        words[i] = word if word else None
+    
+    # Удаляем пустые элементы (None) из списка
+    words = [word for word in words if word]
 
 # Preprocess input text
 max_word_length = max(len(word) for word in words) + 2  # +2 for BEGIN and END
