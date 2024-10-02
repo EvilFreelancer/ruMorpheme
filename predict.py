@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from huggingface_hub import hf_hub_download
 import argparse
 
-from train import Partitioner, prepare_data, labels_to_morphemes
+from model import Partitioner, prepare_data, labels_to_morphemes
 
 import re
 
