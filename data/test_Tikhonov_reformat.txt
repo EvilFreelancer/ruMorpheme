@@ -1,6 +1,11 @@
 я	я:ROOT
 ты	ты:ROOT
-но	ты:ROOT
+вы	вы:ROOT
+но	но:ROOT
+он	он:ROOT
+она	он:ROOT/а:END
+оно	он:ROOT/о:END
+они	он:ROOT/и:END
 упасти	у:PREF/пас:ROOT/ти:SUFF
 передняя	перед:ROOT/н:SUFF/яя:END
 воскрыляться	вос:PREF/крыл:ROOT/я:SUFF/ть:SUFF/ся:POSTFIX

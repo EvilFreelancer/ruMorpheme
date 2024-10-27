@@ -10,8 +10,9 @@ from torch.utils.data import Dataset, DataLoader
 import wandb
 from read import read_BMES, read_splitted
 
-from model import PAD, BEGIN, END, UNKNOWN, AUXILIARY
-from model import Partitioner, prepare_data, labels_to_morphemes
+from rumorpheme.model import RuMorphemeModel
+from rumorpheme.utils import prepare_data
+from rumorpheme.const import PAD, AUXILIARY
 
 
 def read_config(infile):
@@ -203,11 +204,7 @@ if __name__ == "__main__":
 
     # Initialize model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = Partitioner(
-        symbols_number=len(symbols),
-        target_symbols_number=len(target_symbols),
-        params=params["model_params"]
-    )
+    model = RuMorphemeModel(params["model_params"], symbols, target_symbols)
     model.to(device)
 
     # Model parameters
@@ -237,7 +234,7 @@ if __name__ == "__main__":
         wandb.finish()
 
     # Save model
-    model_path = params.get("model_file", "model/pytorch-model.bin")
+    model_path = params.get("model_file", "model/pytorch_model.bin")
     torch.save(model.state_dict(), model_path)
     print(f"Модель сохранена в {model_path}")
 
@@ -253,7 +250,5 @@ if __name__ == "__main__":
         json.dump({
             "symbols": symbols,
             "symbol_codes": symbol_codes,
-            "target_symbols": target_symbols,
-            "target_symbol_codes": target_symbol_codes
         }, f, indent=2, ensure_ascii=False)
     print(f"Словарь сохранён в {vocab_path}")
