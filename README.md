@@ -136,24 +136,38 @@ python3 train.py config/ruMorpheme.json
 
 По завершению тренировки будут созданы:
 
-- `model/pytorch-model.bin` - веса модели
+- `model/pytorch_model.bin` - веса модели
 - `model/config.json` - конфигурация модели
 - `model/vocab.json` - словарь необходимый для работы предикшена
 
-### Валидация модели
+### Валидация обученной модели
 
 ```shell
-python3 eval.py config/ruMorpheme.json
+python3 eval.py
 ```
 
 Отчёт валидации будет в `models/evaluation_report.txt`.
 
 ### Инференс обученной модели
 
-Запуск тестового предикшена из файла [input_text.txt](./input_text.txt):
+Запуск тестового инференса из файла [input_text.txt](./input_text.txt):
 
 ```shell
 python predict_file.py input_text.txt --model-path=evilfreelancer/ruMorpheme-v0.1
 ```
 
 Если не указывать `--model-path` то модель и конфигурация будут прочитаны из директории `./model`.
+
+## Лицензия
+
+Этот проект лицензирован под лицензией `MIT`. Подробности см. в файле [LICENSE](./LICENSE).
+
+## Цитирование
+
+```
+@misc{rumorpheme2024sources,
+    title={ruMorpheme - Russian Morphemes Segmentation},
+    author={Pavel Rykov},
+    year={2024}
+}
+```
