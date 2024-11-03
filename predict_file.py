@@ -1,5 +1,6 @@
 import json
 import argparse
+import re
 
 from rumorpheme.model import RuMorphemeModel
 from rumorpheme.utils import labels_to_morphemes
@@ -16,6 +17,7 @@ input_text_file = args.input_text_file
 use_morpheme_types = bool(args.use_morpheme_types)
 
 # Load the model
+print(f"Loading model from {model_path}...")
 model = RuMorphemeModel.from_pretrained(model_path)
 model.eval()
 
@@ -25,7 +27,7 @@ with open(input_text_file, "r", encoding="utf8") as f:
     for line in f:
         if line.strip():
             words += line.split(' ')
-    words = [ln.strip() for ln in words]
+    words = [re.sub(r'[^а-яА-Я\-]', '', word).lower() for word in words]
 
 # Perform predictions
 all_predictions, all_log_probs = model.predict(words)

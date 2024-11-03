@@ -5,3 +5,5 @@
 /dist/
 /*.egg-info/
 __pycache__
+/tokenizer/
+/model/

@@ -1,3 +1,4 @@
+import os
 import sys
 import bisect
 import numpy as np
@@ -232,6 +233,10 @@ if __name__ == "__main__":
     # Session completed
     if wandb_enabled:
         wandb.finish()
+
+    # Check if directory exists
+    if not os.path.exists('./model'):
+        os.makedirs('./model')
 
     # Save model
     model_path = params.get("model_file", "model/pytorch_model.bin")
