@@ -93,10 +93,11 @@ new_tokenizer = RuMorphemeTokenizerFast(
 )
 
 # Test the tokenizer
-test_text = "Философское восприятие мира."
+# test_text = "Философское восприятие мира."
+test_text = "Привет! Как твои дела?"
 input_ids = new_tokenizer.encode(test_text)
 print("Text: ", test_text)
-print("IDs:", input_ids)
+print("Encoded:", input_ids)
 print("Tokens:", new_tokenizer.convert_ids_to_tokens(input_ids))
 print("Decoded:", new_tokenizer.decode(input_ids))
 
