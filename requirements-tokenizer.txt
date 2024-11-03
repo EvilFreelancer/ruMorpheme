@@ -1,3 +1,4 @@
 # Tokenization
 tokenizers~=0.20.1
 transformers~=4.46.1
+pandas~=2.2.3

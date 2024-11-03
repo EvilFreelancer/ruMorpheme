@@ -1,11 +1,12 @@
 import os
+from tqdm import tqdm
 
 from tokenizers import pre_tokenizers, Tokenizer, NormalizedString
 from tokenizers.models import WordLevel
 
 from rumorpheme.tokenizer import (
     RuMorphemeTokenizerFast, RuMorphemePreTokenizer,
-    AUXILIARY, NUMBERS, UNKNOWN, BEGIN, END
+    AUXILIARY, NUMBERS, UNKNOWN, BEGIN, END, PAD
 )
 
 
@@ -20,7 +21,7 @@ def build_morpheme_vocab(dataset, sort_vocab=True):
     pre_tokenizer = RuMorphemePreTokenizer()
     morpheme_list = []
     morpheme_set = set()
-    for text in dataset:
+    for text in tqdm(dataset):
         words = splitter.pre_tokenize_str(text)
         for word in words:
             token_text = word[0]
@@ -51,20 +52,21 @@ def build_morpheme_vocab(dataset, sort_vocab=True):
 
 
 # Example dataset for vocabulary creation
-dataset = [
-    "Аве, Цезарь!",
-    "Привет! Как твои дела?",
-    "Приветливей видали.",
-    "Заманчиво!",
-    "Это тестовое предложение.",
-    "Морфемная токенизация на русском языке."
-    "Скажи-ка, дядя ведь не даром..."
-]
+# dataset = [
+#     "Аве, Цезарь!",
+#     "Привет! Как твои дела?",
+#     "Приветливей видали.",
+#     "Заманчиво!",
+#     "Это тестовое предложение.",
+#     "Морфемная токенизация на русском языке."
+#     "Скажи-ка, дядя ведь не даром..."
+# ]
+dataset = open('./data/all_text.txt', 'r').read().splitlines()
+# print(len(dataset))
+# exit()
 
 # Build the vocabulary
 vocab = build_morpheme_vocab(dataset)
-# print(vocab)
-# exit()
 
 # Create the WordLevel model with your vocabulary
 model = WordLevel(vocab=vocab, unk_token=AUXILIARY[UNKNOWN])
@@ -78,8 +80,8 @@ tokenizer = Tokenizer(model=model)
 # )
 
 # Check if directory exists
-if not os.path.exists('./tokenizer'):
-    os.makedirs('./tokenizer')
+if not os.path.exists('tokenizer'):
+    os.makedirs('tokenizer')
 
 # Save the tokenizer to the directory
 tokenizer.save('./tokenizer/tokenizer.json')
@@ -90,13 +92,15 @@ new_tokenizer = RuMorphemeTokenizerFast(
     # vocab=vocab,
     bos_token=AUXILIARY[BEGIN],
     eos_token=AUXILIARY[END],
+    pad_token=AUXILIARY[PAD],
+    unk_token=AUXILIARY[UNKNOWN],
 )
 
 # Test the tokenizer
 # test_text = "Философское восприятие мира."
 test_text = "Привет! Как твои дела?"
 input_ids = new_tokenizer.encode(test_text)
-print("Text: ", test_text)
+print("Text:", test_text)
 print("Encoded:", input_ids)
 print("Tokens:", new_tokenizer.convert_ids_to_tokens(input_ids))
 print("Decoded:", new_tokenizer.decode(input_ids))

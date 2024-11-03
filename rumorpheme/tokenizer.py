@@ -66,6 +66,9 @@ class RuMorphemeDecoder:
     """
 
     def decode_chain(self, tokens: List[str]) -> List[str]:
+        """
+        tokenizer.decode function calls this function
+        """
         decoded_tokens = []
         for token in tokens:
             # If token is a space, keep it as is
@@ -83,20 +86,22 @@ class RuMorphemeDecoder:
 
 class RuMorphemeTokenizerFast(PreTrainedTokenizerFast):
     def __init__(self, *args, **kwargs):
-        # Initialize the base class
         super().__init__(*args, **kwargs)
 
         # If pre-tokenizer nodel is not specified, use the default
-        model_name = kwargs.get('model_name')
+        self.model_name = kwargs.get('model_name')
         if kwargs.get('model_name') is None:
-            model_name: str = DEFAULT_MODEL_NAME
+            self.model_name: str = DEFAULT_MODEL_NAME
 
+        # Complete initialization
+        self.init_backend_tokenizer()
+
+    def init_backend_tokenizer(self):
         # Custom pre-tokenizer
         self.backend_tokenizer.pre_tokenizer = pre_tokenizers.Sequence([
             pre_tokenizers.Punctuation(),
-            pre_tokenizers.PreTokenizer.custom(RuMorphemePreTokenizer(model_name))
+            pre_tokenizers.PreTokenizer.custom(RuMorphemePreTokenizer(self.model_name))
         ])
-
         # Custom decoder
         self.backend_tokenizer.decoder = decoders.Decoder.custom(RuMorphemeDecoder())
 
@@ -125,7 +130,7 @@ class RuMorphemeTokenizerFast(PreTrainedTokenizerFast):
         # Correctly specify the tokenizer_class with module name
         tokenizer_config['tokenizer_class'] = "RuMorphemeTokenizerFast"
         tokenizer_config['use_fast'] = True
-        tokenizer_config['auto_map'] = {"AutoTokenizer": "tokenizer.RuMorphemeTokenizerFast"}
+        tokenizer_config['auto_map'] = {"AutoTokenizer": ["", "my_tokenizer.RuMorphemeTokenizerFast"]}
 
         with open(tokenizer_config_file, 'w', encoding='utf-8') as f:
             json.dump(tokenizer_config, f, ensure_ascii=False)
