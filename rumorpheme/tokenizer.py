@@ -3,14 +3,23 @@ import json
 import re
 from typing import List
 
-from tokenizers import pre_tokenizers, decoders, NormalizedString, PreTokenizedString
+from tokenizers import pre_tokenizers, decoders, NormalizedString, PreTokenizedString, AddedToken
 from transformers import PreTrainedTokenizerFast
 
 from rumorpheme import RuMorphemeModel, labels_to_morphemes
 
 DEFAULT_MODEL_NAME = "evilfreelancer/ruMorpheme-v0.1"
-PAD, BEGIN, END, UNKNOWN, SPACE, SYSTEM, USER, ASSISTANT, FUNCTION_CALL, FUNCTION_RESPONSE = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
-AUXILIARY = ["<pad>", "<s>", "</s>", "<unk>", " ", "system", "user", "assistant", "function_call", "function_response"]
+
+END, BEGIN, PAD, UNKNOWN, CAP, ALL_CAPS = 0, 1, 2, 3, 4, 5
+SYSTEM, USER, ASSISTANT, FUNCTION_CALL, FUNCTION_RESPONSE = 6, 7, 8, 9, 10
+SPACE = 11
+
+AUXILIARY = [
+    "</s>", "<s>", "<pad>", "<unk>", "<cap>", "<all_caps>",
+    "system", "user", "assistant", "function_call", "function_response",
+    " ",
+]
+
 NUMBERS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
 
@@ -46,7 +55,7 @@ class RuMorphemePreTokenizer:
         """
         word = str(normalized_string)
 
-        # If word is just spaces, return as is
+        # If word is just spaces or digits, return as is
         if word.isspace() or word.isdigit():
             return [normalized_string]
 
@@ -54,15 +63,36 @@ class RuMorphemePreTokenizer:
         if not any(c.isalpha() for c in word):
             return [normalized_string]
 
+        # Detect capitalization
+        cap_token = None
+        if word[0].isupper():
+            cap_token = NormalizedString(AUXILIARY[CAP])
+            if len(word) > 1 and word.isupper():
+                cap_token = NormalizedString(AUXILIARY[ALL_CAPS])
+
+        # Convert word to lowercase for morpheme splitting
+        word_lower = word.lower()
+
         # Make predictions and return morphemes
-        all_predictions, all_log_probs = self.model.predict([word])
-        morphs, morph_types, _ = labels_to_morphemes(word.lower(), all_predictions[0], all_log_probs[0])
-        return [NormalizedString(f"{morph_type}/{morph}") for morph, morph_type in zip(morphs, morph_types)]
+        all_predictions, all_log_probs = self.model.predict([word_lower])
+        morphs, morph_types, _ = labels_to_morphemes(word_lower, all_predictions[0], all_log_probs[0])
+
+        # Create list of morpheme tokens
+        morpheme_tokens = [
+            NormalizedString(f"{morph_type}/{morph}")
+            for morph, morph_type in zip(morphs, morph_types)
+        ]
+
+        # Insert capitalization token if needed
+        if cap_token:
+            return [cap_token] + morpheme_tokens
+        else:
+            return morpheme_tokens
 
 
 class RuMorphemeDecoder:
     """
-    Custom decoder for RuMorpheme model, it removes morph_type prefix from tokens and keep spaces.
+    Custom decoder for RuMorpheme model, it removes morph_type prefix from tokens and keeps spaces.
     """
 
     def decode_chain(self, tokens: List[str]) -> List[str]:
@@ -70,7 +100,18 @@ class RuMorphemeDecoder:
         tokenizer.decode function calls this function
         """
         decoded_tokens = []
+        capitalize_next = False
+        uppercase_next = False
+
         for token in tokens:
+            # Handle capitalization tokens
+            if token == AUXILIARY[CAP]:
+                capitalize_next = True
+                continue
+            elif token == AUXILIARY[ALL_CAPS]:
+                uppercase_next = True
+                continue
+
             # If token is a space, keep it as is
             if token.isspace():
                 decoded_tokens.append(token)
@@ -80,6 +121,15 @@ class RuMorphemeDecoder:
                     _, morph = token.split('/', 1)
                 else:
                     morph = token
+
+                # Apply capitalization if needed
+                if uppercase_next:
+                    morph = morph.upper()
+                    uppercase_next = False
+                elif capitalize_next:
+                    morph = morph.capitalize()
+                    capitalize_next = False
+
                 decoded_tokens.append(morph)
         return decoded_tokens
 
@@ -131,7 +181,7 @@ class RuMorphemeTokenizerFast(PreTrainedTokenizerFast):
         # Correctly specify the tokenizer_class with module name
         tokenizer_config['tokenizer_class'] = "RuMorphemeTokenizerFast"
         tokenizer_config['use_fast'] = True
-        tokenizer_config['auto_map'] = {"AutoTokenizer": ["", "my_tokenizer.RuMorphemeTokenizerFast"]}
+        tokenizer_config['auto_map'] = {"AutoTokenizer": ["", "tokenizer.RuMorphemeTokenizerFast"]}
 
         with open(tokenizer_config_file, 'w', encoding='utf-8') as f:
             json.dump(tokenizer_config, f, ensure_ascii=False)

@@ -6,7 +6,7 @@ from tokenizers.models import WordLevel
 
 from rumorpheme.tokenizer import (
     RuMorphemeTokenizerFast, RuMorphemePreTokenizer,
-    AUXILIARY, NUMBERS, UNKNOWN, BEGIN, END, PAD
+    AUXILIARY, NUMBERS, UNKNOWN, BEGIN, END, PAD, CAP, ALL_CAPS
 )
 
 
@@ -19,7 +19,7 @@ def build_morpheme_vocab(dataset, sort_vocab=True):
         pre_tokenizers.Punctuation(),
         pre_tokenizers.Digits(individual_digits=True),
     ])
-    pre_tokenizer = RuMorphemePreTokenizer()
+    pre_tokenizer = RuMorphemePreTokenizer(model_name="./model")
     morpheme_list = []
     morpheme_set = set()
     for text in tqdm(dataset):
@@ -37,6 +37,8 @@ def build_morpheme_vocab(dataset, sort_vocab=True):
                 morphemes = pre_tokenizer.morpheme_split(0, NormalizedString(token_text))
                 for morpheme in morphemes:
                     morpheme_str = str(morpheme)
+                    if morpheme_str == AUXILIARY[CAP] or morpheme_str == AUXILIARY[ALL_CAPS]:
+                        continue
                     if morpheme_str not in morpheme_set:
                         morpheme_set.add(morpheme_str)
                         morpheme_list.append(morpheme_str)
@@ -94,6 +96,7 @@ tokenizer.save('./tokenizer/tokenizer.json')
 
 # Wrap it with RuMorphemeTokenizerFast for compatibility with transformers
 new_tokenizer = RuMorphemeTokenizerFast(
+    model_name="./model",
     tokenizer_object=tokenizer,
     # vocab=vocab,
     bos_token=AUXILIARY[BEGIN],
@@ -107,7 +110,7 @@ new_tokenizer = RuMorphemeTokenizerFast(
 test_text = "Привет! Как твои дела?"
 input_ids = new_tokenizer.encode(test_text)
 print("Text:", test_text)
-print("Encoded:", input_ids)
+print("Encoded:", input_ids, len(input_ids))
 print("Tokens:", new_tokenizer.convert_ids_to_tokens(input_ids))
 print("Decoded:", new_tokenizer.decode(input_ids))
 
