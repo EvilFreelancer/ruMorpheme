@@ -169,6 +169,7 @@ if __name__ == "__main__":
         sys.exit("Укажите файл конфигурации")
     config_file = sys.argv[1]
     params = read_config(config_file)
+    learning_rate = params.get("learning_rate", 0.001)
     use_morpheme_types = params.get("use_morpheme_types", True)
     measure_last = params.get("measure_last", use_morpheme_types)
     read_func = read_BMES if use_morpheme_types else read_splitted
@@ -210,7 +211,7 @@ if __name__ == "__main__":
 
     # Model parameters
     criterion = nn.CrossEntropyLoss(ignore_index=PAD)
-    optimizer = optim.Adam(model.parameters())
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     nepochs = params["model_params"].get("nepochs", 10)
 
     # Enabling logging to wandb

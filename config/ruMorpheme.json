@@ -1,4 +1,5 @@
 {
+  "learning_rate": 0.0007,
   "model_params": {
     "conv_layers": 3,
     "window_size": [5],
