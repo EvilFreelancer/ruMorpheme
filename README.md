@@ -12,7 +12,7 @@
 - постфиксы (POSTFIX)
 - окончания (END)
 
-Веса модели [evilfreelancer/ruMorpheme-v0.1](https://huggingface.co/evilfreelancer/ruMorpheme-v0.1) на HuggingFace.
+Веса модели [evilfreelancer/ruMorpheme-v0.2](https://huggingface.co/evilfreelancer/ruMorpheme-v0.2) на HuggingFace.
 
 Вдохновлён кодовой базой
 проекта [AlexeySorokin/NeuralMorphemeSegmentation](https://github.com/AlexeySorokin/NeuralMorphemeSegmentation), который
