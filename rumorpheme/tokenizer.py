@@ -47,11 +47,11 @@ class RuMorphemePreTokenizer:
         word = str(normalized_string)
 
         # If word is just spaces, return as is
-        if word.isspace():
+        if word.isspace() or word.isdigit():
             return [normalized_string]
 
-        # Ignore special characters (non-alphabetical and non-numeric)
-        if not any(c.isalpha() or c.isdigit() for c in word):
+        # Ignore special characters (non-alphabetical)
+        if not any(c.isalpha() for c in word):
             return [normalized_string]
 
         # Make predictions and return morphemes
@@ -100,6 +100,7 @@ class RuMorphemeTokenizerFast(PreTrainedTokenizerFast):
         # Custom pre-tokenizer
         self.backend_tokenizer.pre_tokenizer = pre_tokenizers.Sequence([
             pre_tokenizers.Punctuation(),
+            pre_tokenizers.Digits(individual_digits=True),
             pre_tokenizers.PreTokenizer.custom(RuMorphemePreTokenizer(self.model_name))
         ])
         # Custom decoder
@@ -150,6 +151,7 @@ class RuMorphemeTokenizerFast(PreTrainedTokenizerFast):
         # Custom pre-tokenizer
         tokenizer.backend_tokenizer.pre_tokenizer = pre_tokenizers.Sequence([
             pre_tokenizers.Punctuation(),
+            pre_tokenizers.Digits(individual_digits=True),
             pre_tokenizers.PreTokenizer.custom(RuMorphemePreTokenizer(model_name))
         ])
 

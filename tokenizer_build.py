@@ -17,6 +17,7 @@ def build_morpheme_vocab(dataset, sort_vocab=True):
     splitter = pre_tokenizers.Sequence([
         pre_tokenizers.Whitespace(),
         pre_tokenizers.Punctuation(),
+        pre_tokenizers.Digits(individual_digits=True),
     ])
     pre_tokenizer = RuMorphemePreTokenizer()
     morpheme_list = []
@@ -25,6 +26,8 @@ def build_morpheme_vocab(dataset, sort_vocab=True):
         words = splitter.pre_tokenize_str(text)
         for word in words:
             token_text = word[0]
+            if token_text.isdigit():
+                continue
             if token_text.isspace():
                 morpheme_str = token_text
                 if morpheme_str not in morpheme_set:
@@ -56,7 +59,8 @@ def build_morpheme_vocab(dataset, sort_vocab=True):
 #     "Аве, Цезарь!",
 #     "Привет! Как твои дела?",
 #     "Приветливей видали.",
-#     "Заманчиво!",
+#     "1912г.",
+#     "Заманчиво! 123",
 #     "Это тестовое предложение.",
 #     "Морфемная токенизация на русском языке."
 #     "Скажи-ка, дядя ведь не даром..."
@@ -67,6 +71,8 @@ dataset = open('./data/all_text.txt', 'r').read().splitlines()
 
 # Build the vocabulary
 vocab = build_morpheme_vocab(dataset)
+# print(vocab)
+# exit()
 
 # Create the WordLevel model with your vocabulary
 model = WordLevel(vocab=vocab, unk_token=AUXILIARY[UNKNOWN])
