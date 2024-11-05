@@ -8,7 +8,7 @@ from transformers import PreTrainedTokenizerFast
 
 from rumorpheme import RuMorphemeModel, labels_to_morphemes
 
-DEFAULT_MODEL_NAME = "evilfreelancer/ruMorpheme-v0.1"
+DEFAULT_MODEL_NAME = "evilfreelancer/ruMorpheme-v0.2"
 
 END, BEGIN, PAD, UNKNOWN, CAP, ALL_CAPS = 0, 1, 2, 3, 4, 5
 SYSTEM, USER, ASSISTANT, FUNCTION_CALL, FUNCTION_RESPONSE = 6, 7, 8, 9, 10
