@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ruMorpheme',
-    version='0.2.1',
+    version='0.3.0',
     author='Pavel Rykov',
     author_email='paul@drteam.rocks',
     description='Проект языковой модели для проведения морфемного анализа и сегментации слов русского языка.',

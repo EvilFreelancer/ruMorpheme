@@ -1,6 +1,7 @@
 import os
 import json
 import re
+import string
 from typing import List
 
 from tokenizers import pre_tokenizers, decoders, NormalizedString, PreTokenizedString, AddedToken
@@ -12,21 +13,23 @@ DEFAULT_MODEL_NAME = "evilfreelancer/ruMorpheme-v0.2"
 
 END, BEGIN, PAD, UNKNOWN, CAP, ALL_CAPS = 0, 1, 2, 3, 4, 5
 SYSTEM, USER, ASSISTANT, FUNCTION_CALL, FUNCTION_RESPONSE = 6, 7, 8, 9, 10
-SPACE = 11
+SPACE, NEWLINE, TAB = 11, 12, 13
 
 AUXILIARY = [
     "</s>", "<s>", "<pad>", "<unk>", "<cap>", "<all_caps>",
     "system", "user", "assistant", "function_call", "function_response",
-    " ",
+    " ", "\n", "\t"
 ]
 
 NUMBERS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+LETTERS_CYRILLIC = list(map(chr, range(ord('а'), ord('я') + 1)))
+LETTERS_LATIN = list(string.ascii_lowercase)
 
 
 class RuMorphemePreTokenizer:
     """
     Pre-tokenizer for RuMorpheme model.
-    Splits on spaces and includes spaces as tokens.
+    Splits on spaces, newlines, and tabs, including these as tokens.
     Then, applies morpheme splitting to non-space tokens.
     """
 
@@ -35,35 +38,47 @@ class RuMorphemePreTokenizer:
         self.model.eval()
 
     def pre_tokenize(self, pretok: PreTokenizedString):
-        # First, split on spaces and include spaces as tokens
+        # First, split on spaces (including newlines and tabs) and add them as tokens
         pretok.split(self.split_on_spaces)
-        # Then, apply morpheme splitting to non-space tokens
-        pretok.split(self.morpheme_split)
+
+        # Apply morpheme or character-level splitting to non-space tokens
+        pretok.split(self.morpheme_or_char_split)
 
     def split_on_spaces(self, i: int, normalized_string: NormalizedString) -> List[NormalizedString]:
         """
-        Splits on spaces and includes spaces as tokens.
-        TODO: Need to make performance tests on this function.
+        Splits on spaces, newlines, and tabs, including these as tokens.
         """
         text = str(normalized_string)
-        splits = [NormalizedString(match.group()) for match in re.finditer(r'\s+|\S+', text)]
+        splits = [
+            NormalizedString(match.group())
+            for match in re.finditer(r'\s+|\S+', text)
+        ]
+
+        # Convert newlines and tabs to tokens
+        for idx, split in enumerate(splits):
+            if split == "\n":
+                splits[idx] = NormalizedString(AUXILIARY[NEWLINE])
+            elif split == "\t":
+                splits[idx] = NormalizedString(AUXILIARY[TAB])
+
         return splits
 
-    def morpheme_split(self, i: int, normalized_string: NormalizedString) -> List[NormalizedString]:
+    def morpheme_or_char_split(self, i: int, normalized_string: NormalizedString) -> List[NormalizedString]:
         """
-        Split word on morphemes, including numbers and punctuation.
+        Attempts to split the token into morphemes. If the token starts with "UNKNOWN/",
+        splits it into individual characters.
         """
         word = str(normalized_string)
 
-        # If word is just spaces or digits, return as is
+        # If the token is whitespace or digits, return as is
         if word.isspace() or word.isdigit():
             return [normalized_string]
 
-        # Ignore special characters (non-alphabetical)
+        # Ignore tokens that are only punctuation or non-alphabetical
         if not any(c.isalpha() for c in word):
             return [normalized_string]
 
-        # Detect capitalization
+        # Detect capitalization and add relevant token if necessary
         cap_token = None
         if word[0].isupper():
             cap_token = NormalizedString(AUXILIARY[CAP])
@@ -73,15 +88,20 @@ class RuMorphemePreTokenizer:
         # Convert word to lowercase for morpheme splitting
         word_lower = word.lower()
 
-        # Make predictions and return morphemes
+        # Make predictions to get morphemes
         all_predictions, all_log_probs = self.model.predict([word_lower])
         morphs, morph_types, _ = labels_to_morphemes(word_lower, all_predictions[0], all_log_probs[0])
 
-        # Create list of morpheme tokens
-        morpheme_tokens = [
-            NormalizedString(f"{morph_type}/{morph}")
-            for morph, morph_type in zip(morphs, morph_types)
-        ]
+        # Handle unknown tokens by splitting into characters
+        morpheme_tokens = []
+        for morph, morph_type in zip(morphs, morph_types):
+            if morph_type == "UNKNOWN":
+                # Split unknown morpheme into characters
+                char_tokens = [NormalizedString(char) for char in morph]
+                morpheme_tokens.extend(char_tokens)
+            else:
+                # Add as a single morpheme token
+                morpheme_tokens.append(NormalizedString(f"{morph_type}/{morph}"))
 
         # Insert capitalization token if needed
         if cap_token:
