@@ -12,7 +12,7 @@
 - постфиксы (POSTFIX)
 - окончания (END)
 
-Веса модели [evilfreelancer/ruMorpheme-v0.2](https://huggingface.co/evilfreelancer/ruMorpheme-v0.2) на HuggingFace.
+По умолчанию библиотека использует веса [evilfreelancer/ruMorpheme-v0.1](https://huggingface.co/evilfreelancer/ruMorpheme-v0.1). Версия [v0.2](https://huggingface.co/evilfreelancer/ruMorpheme-v0.2) доступна отдельно.
 
 Вдохновлён кодовой базой
 проекта [AlexeySorokin/NeuralMorphemeSegmentation](https://github.com/AlexeySorokin/NeuralMorphemeSegmentation), который
@@ -70,21 +70,21 @@ for idx, word in enumerate(words):
 В случае если вы используете скрипт предикшена из примера выше, то результат будет выглядеть следующим образом:
 
 ```json lines
-{"word": "В", "morphemes": [{"text": "в", "type": "ROOT", "prob": "98.59"}]}
-{"word": "воскресенье", "morphemes": [{"text": "воскрес", "type": "ROOT", "prob": "99.3"}, {"text": "ень", "type": "SUFF", "prob": "96.58"}, {"text": "е", "type": "END", "prob": "100.0"}]}
-{"word": "мы", "morphemes": [{"text": "мы", "type": "ROOT", "prob": "99.77"}]}
-{"word": "решили", "morphemes": [{"text": "решил", "type": "ROOT", "prob": "85.8"}, {"text": "и", "type": "END", "prob": "100.0"}]}
-{"word": "перезапланировать", "morphemes": [{"text": "пере", "type": "PREF", "prob": "100.0"}, {"text": "за", "type": "PREF", "prob": "77.91"}, {"text": "план", "type": "ROOT", "prob": "98.43"}, {"text": "ир", "type": "SUFF", "prob": "100.0"}, {"text": "ова", "type": "SUFF", "prob": "99.98"}, {"text": "ть", "type": "SUFF", "prob": "98.37"}]}
+{"word": "В", "morphemes": [{"text": "в", "type": "UNKNOWN", "prob": "100.0"}]}
+{"word": "воскресенье", "morphemes": [{"text": "воскресе", "type": "ROOT", "prob": "99.94"}, {"text": "нье", "type": "SUFF", "prob": "93.6"}]}
+{"word": "мы", "morphemes": [{"text": "мы", "type": "UNKNOWN", "prob": "100.0"}]}
+{"word": "решили", "morphemes": [{"text": "реши", "type": "ROOT", "prob": "97.5"}, {"text": "л", "type": "SUFF", "prob": "88.58"}, {"text": "и", "type": "ROOT", "prob": "75.63"}]}
+{"word": "перезапланировать", "morphemes": [{"text": "перез", "type": "PREF", "prob": "100.0"}, {"text": "ап", "type": "PREF", "prob": "88.38"}, {"text": "лани", "type": "ROOT", "prob": "99.69"}, {"text": "ро", "type": "SUFF", "prob": "100.0"}, {"text": "ват", "type": "SUFF", "prob": "99.91"}, {"text": "ь", "type": "SUFF", "prob": "99.98"}]}
 ```
 
 А вот так её можно будет заставить выводить результат:
 
 ```shell
-В	в:ROOT	98.59
-воскресенье	воскрес:ROOT/ень:SUFF/е:END	99.30 96.58 100.00
-мы	мы:ROOT	99.77
-решили	решил:ROOT/и:END	85.80 100.00
-перезапланировать	пере:PREF/за:PREF/план:ROOT/ир:SUFF/ова:SUFF/ть:SUFF	100.00 77.91 98.43 100.00 99.98 98.37
+В	в:UNKNOWN	100.00
+воскресенье	воскресе:ROOT/нье:SUFF	99.94 93.60
+мы	мы:UNKNOWN	100.00
+решили	реши:ROOT/л:SUFF/и:ROOT	97.50 88.58 75.63
+перезапланировать	перез:PREF/ап:PREF/лани:ROOT/ро:SUFF/ват:SUFF/ь:SUFF	100.00 88.38 99.69 100.00 99.91 99.98
 ```
 
 Если форматировать вывод:
